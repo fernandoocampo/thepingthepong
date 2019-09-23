@@ -1,3 +1,11 @@
+.docker-data/
+.idea*
+.DS_Store
+bin/*
+vendor/*
+debug
+thepingthepong
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

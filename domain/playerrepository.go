@@ -1,11 +1,13 @@
 package domain
 
+import "context"
+
 // PlayerRepository defines standard behavior
 type PlayerRepository interface {
 	// Save the given player
-	Save(player *Player) error
+	Save(ctx context.Context, player *Player) error
 	// FindById searches a player record with the given Id.
-	FindByID(id string) (Player, error)
+	FindByID(ctx context.Context, id string) (Player, error)
 	// FindAll returns all the players stored in the repository.
-	FindAll(sorted bool) ([]Player, error)
+	FindAll(ctx context.Context, sorted bool) ([]Player, error)
 }

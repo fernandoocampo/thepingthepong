@@ -1,9 +1,11 @@
 package port
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
 	"github.com/fernandoocampo/thepingthepong/domain"
@@ -14,7 +16,7 @@ import (
 type newPlayer struct {
 	Names  string `json:"names"`
 	Wins   int    `json:"wins,omitempty"`
-	Losses int    `json:"wins,omitempty"`
+	Losses int    `json:"losses,omitempty"`
 }
 
 type playerRestHandler struct {
@@ -29,9 +31,14 @@ func NewPlayerRestHandler(playerService playerapp.PlayerService) RestHandler {
 	}
 }
 
+const timeout = time.Second * 5
+
 // GetAll get all records or those that matches a given criteria
 func (p playerRestHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	log.Info("initializing player rest handler to get all")
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	// Read parameters in the query url
 	filters := r.URL.Query()
 	sortedparam := filters.Get("sorted")
@@ -47,7 +54,7 @@ func (p playerRestHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("getting ready to find all players")
-	players, err = p.service.FindAll(sorted)
+	players, err = p.service.FindAll(ctx, sorted)
 
 	if err != nil {
 		log.Errorf("something goes wrong on service to get all players: %s", err.Error())
@@ -55,17 +62,19 @@ func (p playerRestHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	RespondRestWithJSON(w, http.StatusOK, players)
-
 }
 
 // GetByID get record by id
 func (p playerRestHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	log.Info("starting get by id handler")
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	// Read the 'playerid' path parameter from the mux map
 	var playerid = mux.Vars(r)["playerid"]
 	log.Infof("player id to get one player is: %s", playerid)
 	log.Infof("getting ready to find player with id: %s on service", playerid)
-	player, err := p.service.FindByID(playerid)
+	player, err := p.service.FindByID(ctx, playerid)
 	if err != nil {
 		RespondRestWithError(w, http.StatusInternalServerError, err.Error())
 	}
@@ -75,6 +84,9 @@ func (p playerRestHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // Create creates a new record
 func (p playerRestHandler) Create(w http.ResponseWriter, r *http.Request) {
 	log.Info("starting create handler")
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	var player newPlayer
 	// close the body buffer at the end of the function
 	defer r.Body.Close()
@@ -90,7 +102,7 @@ func (p playerRestHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("consuming create from service to create player: %v", player)
-	_, err := p.service.Create(player.Names, player.Wins, player.Losses)
+	_, err := p.service.Create(ctx, player.Names, player.Wins, player.Losses)
 	if err != nil {
 		log.Errorf("something goes wront at service to create player: %v, got: %s", player, err.Error())
 		RespondRestWithError(w, http.StatusInternalServerError, err.Error())

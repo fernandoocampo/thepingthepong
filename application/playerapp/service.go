@@ -1,6 +1,7 @@
 package playerapp
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fernandoocampo/thepingthepong/domain"
@@ -10,11 +11,11 @@ import (
 // PlayerService defines standard behavior for player capabilities.
 type PlayerService interface {
 	// Create creates a player with the given data and return id or and error
-	Create(names string, wins, losses int) (string, error)
+	Create(ctx context.Context, names string, wins, losses int) (string, error)
 	// FindByID finds a player by id
-	FindByID(id string) (domain.Player, error)
+	FindByID(ctx context.Context, id string) (domain.Player, error)
 	// FindAll get all the players
-	FindAll(sorted bool) ([]domain.Player, error)
+	FindAll(ctx context.Context, sorted bool) ([]domain.Player, error)
 }
 
 // basicPlayerService implements the player service.
@@ -31,7 +32,7 @@ func NewBasicPlayerService(repository domain.PlayerRepository) PlayerService {
 }
 
 // Create creates a player
-func (b basicPlayerService) Create(names string, wins, losses int) (string, error) {
+func (b basicPlayerService) Create(ctx context.Context, names string, wins, losses int) (string, error) {
 	log.Infof("creating player with names: '%s', wins: %d, losses: %d", names, wins, losses)
 	// check that the given parameter is valid
 	player := domain.NewPlayerWithStatistics(names, wins, losses)
@@ -41,7 +42,7 @@ func (b basicPlayerService) Create(names string, wins, losses int) (string, erro
 		return "", errvalidation
 	}
 	log.Infof("getting ready to save player %v on repository", player)
-	errsave := b.repository.Save(player)
+	errsave := b.repository.Save(ctx, player)
 	if errsave != nil {
 		log.Errorf("player %v cannot be stored because: %s", player, errsave.Error())
 		return "", errors.Wrap(errsave, "Player cannot be stored")
@@ -51,7 +52,7 @@ func (b basicPlayerService) Create(names string, wins, losses int) (string, erro
 }
 
 // FindByID finds a player by id
-func (b basicPlayerService) FindByID(id string) (domain.Player, error) {
+func (b basicPlayerService) FindByID(ctx context.Context, id string) (domain.Player, error) {
 	log.Infof("finding player with id: %s", id)
 	if id == "" { // nothig to search
 		log.Infof("provided id was empty... returning an empty player")
@@ -59,7 +60,7 @@ func (b basicPlayerService) FindByID(id string) (domain.Player, error) {
 	}
 
 	log.Infof("getting ready to find the player with id: %s on repository", id)
-	result, err := b.repository.FindByID(id)
+	result, err := b.repository.FindByID(ctx, id)
 
 	if err != nil {
 		log.Errorf("something was going wrong searching player with id: %s, because: %s", id, err.Error())
@@ -72,9 +73,9 @@ func (b basicPlayerService) FindByID(id string) (domain.Player, error) {
 }
 
 // FindAll get all the players
-func (b basicPlayerService) FindAll(sorted bool) ([]domain.Player, error) {
+func (b basicPlayerService) FindAll(ctx context.Context, sorted bool) ([]domain.Player, error) {
 	log.Infof("getting ready to find all players with sorted: %t", sorted)
-	result, err := b.repository.FindAll(sorted)
+	result, err := b.repository.FindAll(ctx, sorted)
 	log.Debugf("after finding all players, got %+v", result)
 	if err != nil {
 		log.Errorf("something goes wrong trying to find all players: %s", err.Error())

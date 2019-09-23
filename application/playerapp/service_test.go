@@ -1,6 +1,7 @@
 package playerapp_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
@@ -9,6 +10,7 @@ import (
 )
 
 func TestSaveValidPlayer(t *testing.T) {
+	ctx := context.Background()
 	repo := repository.NewPlayerRepositoryOnMemory(1)
 	service := playerapp.NewBasicPlayerService(repo)
 	// Given a player to save
@@ -17,7 +19,7 @@ func TestSaveValidPlayer(t *testing.T) {
 	newplayerlosses := 1
 
 	// When we want to store the new player
-	newid, err := service.Create(newplayername, newplayerwins, newplayerlosses)
+	newid, err := service.Create(ctx, newplayername, newplayerwins, newplayerlosses)
 
 	// then we check if there is not any error
 	if err != nil {
@@ -25,7 +27,7 @@ func TestSaveValidPlayer(t *testing.T) {
 			newplayername, newplayerwins, newplayerlosses, err)
 	}
 
-	storedplayer, errfindbyid := repo.FindByID(newid)
+	storedplayer, errfindbyid := repo.FindByID(ctx, newid)
 
 	if errfindbyid != nil {
 		t.Errorf("the player with id %s could not be searched because: %s",
@@ -46,15 +48,16 @@ func TestSaveValidPlayer(t *testing.T) {
 }
 
 func TestFindByID(t *testing.T) {
+	ctx := context.Background()
 	playertosave := domain.NewPlayer("Wang Hao")
 	repo := repository.NewPlayerRepositoryOnMemory(1)
-	repo.Save(playertosave)
+	repo.Save(ctx, playertosave)
 	service := playerapp.NewBasicPlayerService(repo)
 	// Given an id to find
 	playerID := playertosave.ID
 
 	// When we want to find the player using the given id
-	storedplayer, err := service.FindByID(playerID)
+	storedplayer, err := service.FindByID(ctx, playerID)
 
 	// Then we check that there is not an error
 	if err != nil {
@@ -73,6 +76,7 @@ func TestFindByID(t *testing.T) {
 }
 
 func TestFindAll(t *testing.T) {
+	ctx := context.Background()
 	// Given this repo and service
 	repo := repository.NewPlayerRepositoryOnMemory(5)
 	expectedresult := map[string]bool{"Ma Long": true, "Timo Boll": true, "Jan-Ove Waldner": true, "Xu Xin": true}
@@ -82,13 +86,14 @@ func TestFindAll(t *testing.T) {
 		domain.NewPlayer("Jan-Ove Waldner"),
 		domain.NewPlayer("Xu Xin"),
 	}
+
 	for _, player := range players {
-		repo.Save(player)
+		repo.Save(ctx, player)
 	}
 	service := playerapp.NewBasicPlayerService(repo)
 
 	// When we want to find the player using the given id
-	result, err := service.FindAll(false)
+	result, err := service.FindAll(ctx, false)
 
 	// Then we check that there is not an error
 	if err != nil {
