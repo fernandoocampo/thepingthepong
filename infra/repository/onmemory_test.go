@@ -1,19 +1,23 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/fernandoocampo/thepingthepong/domain"
 	"github.com/fernandoocampo/thepingthepong/infra/repository"
 )
 
 func TestSavePlayerAndFindIt(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	// given a new player
 	inmemoryrepo := repository.NewPlayerRepositoryOnMemory(5)
 	newplayer := domain.NewPlayer("Ma Long")
 
 	// when we save the player in the inmemory db
-	err := inmemoryrepo.Save(newplayer)
+	err := inmemoryrepo.Save(ctx, newplayer)
 
 	// then we check that is not an error
 	if err != nil {
@@ -22,7 +26,7 @@ func TestSavePlayerAndFindIt(t *testing.T) {
 	}
 
 	// query the new player and check if data was stored well
-	savedplayer, errfind := inmemoryrepo.FindByID(newplayer.ID)
+	savedplayer, errfind := inmemoryrepo.FindByID(ctx, newplayer.ID)
 
 	if errfind != nil {
 		t.Errorf("Querying the player with id [%s], it was expected a player, but we got %s",
@@ -37,6 +41,8 @@ func TestSavePlayerAndFindIt(t *testing.T) {
 }
 
 func TestFindAllNotSorted(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	inmemoryrepo := repository.NewPlayerRepositoryOnMemory(5)
 	expectedresult := map[string]bool{"Ma Long": true, "Timo Boll": true, "Jan-Ove Waldner": true, "Xu Xin": true}
 	// given a set of players in the database
@@ -47,11 +53,11 @@ func TestFindAllNotSorted(t *testing.T) {
 		domain.NewPlayer("Xu Xin"),
 	}
 	for _, player := range players {
-		inmemoryrepo.Save(player)
+		inmemoryrepo.Save(ctx, player)
 	}
 
 	// When we look for all the records
-	result, err := inmemoryrepo.FindAll(false)
+	result, err := inmemoryrepo.FindAll(ctx, false)
 
 	if err != nil {
 		t.Errorf("an expected error was found when findAll function was called: %s", err.Error())
@@ -65,6 +71,8 @@ func TestFindAllNotSorted(t *testing.T) {
 }
 
 func TestFindAllSorted(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 	inmemoryrepo := repository.NewPlayerRepositoryOnMemory(5)
 	expectedresult := []string{"Jan-Ove Waldner", "Ma Long", "Timo Boll", "Xu Xin"}
 	// given a set of players in the database
@@ -75,11 +83,11 @@ func TestFindAllSorted(t *testing.T) {
 		domain.NewPlayer("Xu Xin"),
 	}
 	for _, player := range players {
-		inmemoryrepo.Save(player)
+		inmemoryrepo.Save(ctx, player)
 	}
 
 	// When we look for all the records
-	result, err := inmemoryrepo.FindAll(true)
+	result, err := inmemoryrepo.FindAll(ctx, true)
 
 	if err != nil {
 		t.Errorf("an expected error was found when findAll function was called: %s", err.Error())

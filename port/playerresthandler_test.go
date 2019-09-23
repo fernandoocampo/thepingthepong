@@ -2,11 +2,13 @@ package port_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
 	"github.com/fernandoocampo/thepingthepong/domain"
@@ -50,7 +52,10 @@ func TestCreateAPlayer(t *testing.T) {
 	}
 
 	// Check at the repository if the player was saved
-	players, errfindall := repo.FindAll(false)
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	players, errfindall := repo.FindAll(ctx, false)
 	if errfindall != nil {
 		t.Fatal(errfindall)
 	}
@@ -72,7 +77,10 @@ func TestGetAnExistingPlayer(t *testing.T) {
 	playerhandler := port.NewPlayerRestHandler(service)
 	// save a player in the db.
 	newplayer := domain.NewPlayer("Wang Liqin")
-	errsave := repo.Save(newplayer)
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	errsave := repo.Save(ctx, newplayer)
 	if errsave != nil {
 		t.Fatalf("A player cannot be saved because of: %s", errsave.Error())
 	}
@@ -116,9 +124,12 @@ func TestGetAllPlayers(t *testing.T) {
 	playerhandler := port.NewPlayerRestHandler(service)
 	// save a player in the db.
 	newplayernames := []string{"Wang Liqin", "Liu Guoliang", "Ding Ning"}
+	// context constraint
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	for _, newplayername := range newplayernames {
 		newplayer := domain.NewPlayer(newplayername)
-		errsave := repo.Save(newplayer)
+		errsave := repo.Save(ctx, newplayer)
 		if errsave != nil {
 			t.Fatalf("A player cannot be saved because of: %s", errsave.Error())
 		}
