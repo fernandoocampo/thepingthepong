@@ -3,8 +3,6 @@ package port
 import (
 	"net/http"
 
-	"log"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -21,6 +19,7 @@ type restServer struct {
 
 // NewWebServer instance of a person handler
 func NewWebServer(restHandler RestHandler) WebServer {
+	log.Infof("creating web server")
 	return &restServer{
 		playerRestHandler: restHandler,
 	}
@@ -31,7 +30,7 @@ func NewWebServer(restHandler RestHandler) WebServer {
 func (w *restServer) StartWebServer(port string) {
 	router := newRouter(w.playerRestHandler)
 
-	log.Println("Starting HTTP service at ", port)
+	log.Infof("Starting HTTP service at %s", port)
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	err := http.ListenAndServe(":"+port, handlers.CORS(originsOk)(router))
 
@@ -42,6 +41,7 @@ func (w *restServer) StartWebServer(port string) {
 
 // NewRouter returns a pointer to a mux.Router we can use as a handler.
 func newRouter(restHandler RestHandler) *mux.Router {
+	log.Info("Creating router handler")
 	// Create an instance of the Gorilla router
 	// Gorilla router matches incoming requests against a list of
 	// registered routes and calls a handler for the route that matches
