@@ -25,6 +25,7 @@ func NewPlayer(names string) *Player {
 
 // NewPlayerWithStatistics creates a new player with a random uuid ID.
 func NewPlayerWithStatistics(names string, wins, losses int) *Player {
+	log.Debugf("creating player with names: '%s', wins: %d, losses: %d", names, wins, losses)
 	return &Player{
 		ID:      uuid.New().String(),
 		Names:   names,
@@ -39,29 +40,36 @@ func NewPlayerWithStatistics(names string, wins, losses int) *Player {
 // are not negative.
 func ValidatePlayer(player Player) (bool, error) {
 	var result []string
+	log.Debugf("validating player %v", player)
 	// check for empty parameter
 	if &player == nil {
 		return false, errors.New("There in not data in the player parameter")
 	}
 	// check for a valid names
 	if player.Names == "" {
+		log.Debugf("player has not valid names because it is empty")
 		result = append(result, "Player names cannot be empty")
 	}
 	// check for a valid names value without just spaces
 	if player.Names != "" && strings.TrimSpace(player.Names) == "" {
+		log.Debugf("player has not valid names because it is just spaces")
 		result = append(result, "Player names cannot contain only spaces")
 	}
 	// check that wins value cannot be negative
 	if player.Wins < 0 {
+		log.Debugf("player %s has not valid wins because it is negative: %d", player.Names, player.Wins)
 		result = append(result, "Player wins cannot be less than zero")
 	}
 	// check that wins value cannot be negative
 	if player.Losses < 0 {
+		log.Debugf("player %s has not valid losses because it is negative: %d", player.Names, player.Losses)
 		result = append(result, "Player losses cannot be less than zero")
 	}
 
 	if len(result) > 0 {
-		return false, errors.New(strings.Join(result, "\n"))
+		strresult := strings.Join(result, "\n")
+		log.Debugf("player %v has not valid data, because: %s \n", player, strresult)
+		return false, errors.New(strresult)
 	}
 	return true, nil
 }
