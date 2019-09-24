@@ -17,3 +17,9 @@ type RestHandler interface {
 	// Health returns the health of this service
 	Health(w http.ResponseWriter, r *http.Request)
 }
+
+// AuthHandler Defines behavior for authentication and authorization in REST mode.
+type AuthHandler interface {
+	// SignIn authenticates an user
+	SignIn(w http.ResponseWriter, r *http.Request)
+}

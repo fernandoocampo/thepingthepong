@@ -8,5 +8,44 @@ Clone the project, put on the project root folder and run:
 go run main.go
 ```
 
+## How to consume
+The application provide the following APIs
+
+* Players
+  
+  * Get all players
+  
+    ```
+    curl -X GET http://localhost:8287/players
+    ```
+
+  * Get a player with a given Id
+  
+    ```
+    curl -X GET http://localhost:8287/players/{playerid}
+    ```
+
+  * Create a player
+    
+    Here you are required to generate the token through SignIn capability.
+
+    ```
+    curl -d '{"names":"Fan Zhendong", "wins":10, "losses": 2}' -H "Content-Type: application/json" -H "Authorization: Bearer ${TOKEN}" -X POST http://localhost:8287/players
+    ```
+  
+* Sign in
+  
+  To sign in you must provide user name and password. The current users are :
+
+  * **user1**:password1
+  * **user2**:password2
+  
+  The capability generates a token and return it as a cookie.
+
+  ```
+  curl -d '{"username":"user1", "password":"password1"}' -H "Content-Type: application/json" -X POST http://localhost:8287/signin
+  ```
+
+
 ## HTTP Client
 In the root of the project was added a **insonmina** script to consume the API 

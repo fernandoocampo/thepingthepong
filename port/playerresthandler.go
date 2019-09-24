@@ -36,6 +36,8 @@ const timeout = time.Second * 5
 // GetAll get all records or those that matches a given criteria
 func (p playerRestHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	log.Info("initializing player rest handler to get all")
+	log.Info("checking if token is valid")
+
 	// context constraint
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -84,6 +86,13 @@ func (p playerRestHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // Create creates a new record
 func (p playerRestHandler) Create(w http.ResponseWriter, r *http.Request) {
 	log.Info("starting create handler")
+	// We can obtain the session token from the requests cookies, which come with every request
+	status, ok := validateToken(r)
+	if !ok {
+		// If the cookie is not set, return an unauthorized status
+		w.WriteHeader(status.StatusCode)
+		return
+	}
 	// context constraint
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
