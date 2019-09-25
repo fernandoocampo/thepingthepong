@@ -10,12 +10,51 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fernandoocampo/thepingthepong/application/authapp"
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
 	"github.com/fernandoocampo/thepingthepong/domain"
 	"github.com/fernandoocampo/thepingthepong/infra/repository"
 	"github.com/fernandoocampo/thepingthepong/port"
 	"github.com/gorilla/mux"
 )
+
+func generateToken(t *testing.T) (*http.Cookie, bool) {
+	service := authapp.NewBasicAuthenticator()
+	authHandler := port.NewBasicAuthRestHandler(service)
+
+	strjson := `{"username" : "user1", "password": "password1"}`
+	req, errreq := http.NewRequest("POST", "/signin", bytes.NewBuffer([]byte(strjson)))
+
+	if errreq != nil {
+		t.Fatal(errreq)
+		return nil, false
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	// handler := http.HandlerFunc(playerhandler.GetByID)
+	r := mux.NewRouter()
+	r.HandleFunc("/signin", authHandler.SignIn).Methods("POST")
+
+	// When client consumes a rest api.
+	// handler.ServeHTTP(rr, req)
+	r.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Fatalf("handler returned wrong status code at signin: got %v want %v",
+			status, http.StatusOK)
+		return nil, false
+	}
+
+	for _, cookie := range rr.Result().Cookies() {
+		if cookie.Name == "token" {
+			return cookie, true
+		}
+	}
+
+	return nil, false
+}
 
 func TestCreateAPlayer(t *testing.T) {
 	repo := repository.NewPlayerRepositoryOnMemory(1)
@@ -38,6 +77,14 @@ func TestCreateAPlayer(t *testing.T) {
 	// handler := http.HandlerFunc(playerhandler.GetByID)
 	r := mux.NewRouter()
 	r.HandleFunc("/players", playerhandler.Create).Methods("POST")
+
+	// generates token
+	tokencookie, tokenok := generateToken(t)
+	if !tokenok {
+		t.Fatalf("token cannot be generated, we got this token")
+	}
+
+	req.AddCookie(tokencookie)
 
 	// When client consumes a rest api.
 	// handler.ServeHTTP(rr, req)
