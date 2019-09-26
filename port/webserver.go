@@ -15,14 +15,16 @@ type WebServer interface {
 
 type restServer struct {
 	playerRestHandler RestHandler
+	matchRestHandler  RestHandler
 	authRestHandler   AuthHandler
 }
 
 // NewWebServer instance of a person handler
-func NewWebServer(playerHandler RestHandler, authHandler AuthHandler) WebServer {
+func NewWebServer(playerHandler RestHandler, matchHandler RestHandler, authHandler AuthHandler) WebServer {
 	log.Infof("creating web server")
 	return &restServer{
 		playerRestHandler: playerHandler,
+		matchRestHandler:  matchHandler,
 		authRestHandler:   authHandler,
 	}
 }
@@ -30,7 +32,9 @@ func NewWebServer(playerHandler RestHandler, authHandler AuthHandler) WebServer 
 // StartWebServer starts the http server for this service
 // on the given http port.
 func (w *restServer) StartWebServer(port string) {
-	router := newRouter(w.playerRestHandler, w.authRestHandler)
+	router := newRouter(w.playerRestHandler,
+		w.matchRestHandler,
+		w.authRestHandler)
 
 	log.Infof("Starting HTTP service at %s", port)
 	originsOk := handlers.AllowedOrigins([]string{"*"})
@@ -42,7 +46,7 @@ func (w *restServer) StartWebServer(port string) {
 }
 
 // NewRouter returns a pointer to a mux.Router we can use as a handler.
-func newRouter(restHandler RestHandler, authHandler AuthHandler) *mux.Router {
+func newRouter(playerHandler RestHandler, matchHandler RestHandler, authHandler AuthHandler) *mux.Router {
 	log.Info("Creating router handler")
 	// Create an instance of the Gorilla router
 	// Gorilla router matches incoming requests against a list of
@@ -54,19 +58,25 @@ func newRouter(restHandler RestHandler, authHandler AuthHandler) *mux.Router {
 	router.Methods("GET").
 		Path("/players").
 		Name("getAllPlayers").
-		HandlerFunc(restHandler.GetAll)
+		HandlerFunc(playerHandler.GetAll)
 
 	// Get player by id
 	router.Methods("GET").
 		Path("/players/{playerid}").
 		Name("getPlayerById").
-		HandlerFunc(restHandler.GetByID)
+		HandlerFunc(playerHandler.GetByID)
 
 	// Post to create a player
 	router.Methods("POST").
 		Path("/players").
 		Name("createPlayer").
-		HandlerFunc(restHandler.Create)
+		HandlerFunc(playerHandler.Create)
+
+	// Post to create a player
+	router.Methods("POST").
+		Path("/matches").
+		Name("playMatch").
+		HandlerFunc(matchHandler.Create)
 
 	// Post to sign an user
 	router.Methods("POST").
@@ -78,7 +88,7 @@ func newRouter(restHandler RestHandler, authHandler AuthHandler) *mux.Router {
 	router.Methods("GET").
 		Path("/health").
 		Name("health").
-		HandlerFunc(restHandler.Health) // what's the health
+		HandlerFunc(playerHandler.Health) // what's the health
 
 	return router
 }

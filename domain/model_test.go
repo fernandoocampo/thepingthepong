@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -124,5 +125,32 @@ func TestValidatePlayer(t *testing.T) {
 				t.Errorf("Given parameter [%v], it expects [%s], but it got [%s]", v.param, v.err.Error(), err.Error())
 			}
 		}
+	}
+}
+
+func TestSimulateMatchh(t *testing.T) {
+	player1 := domain.NewPlayer("Wang Hao")
+	player2 := domain.NewPlayer("Zhang Jike")
+
+	got := domain.SimulateMatch(*player1, *player2)
+
+	if len(got.Narrative) == 0 {
+		t.Errorf("a fulled narrative was expected, but got: %v", got.Narrative)
+	}
+	for index, sentence := range got.Narrative {
+		if sentence == "" || strings.TrimSpace(sentence) == "" {
+			t.Errorf("each sentence in the match must contains some text, but sentence: %d was empty", index+1)
+		}
+	}
+	if got.ID == "" {
+		t.Errorf("the match must contain an ID but it was empty")
+	}
+	if got.Winner == nil {
+		t.Errorf("a winner between player: %q and player: %q was expected, but none won",
+			player1.Names, player2.Names)
+	}
+	if got.Loser == nil {
+		t.Errorf("a loser between player: %q and player: %q was expected, but none lost",
+			player1.Names, player2.Names)
 	}
 }

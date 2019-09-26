@@ -17,6 +17,7 @@ type Options struct {
 // Handle is our wrapper around logrus.Entry
 type Handle struct {
 	*logrus.Entry
+	LevelLabel string
 }
 
 // NewLogger creates new logrus logger for a package
@@ -46,7 +47,7 @@ func NewLogger(o Options) (*Handle, error) {
 		return nil, errors.New("Unknown format, expected text,json")
 	}
 
-	logger := &Handle{logrus.StandardLogger().WithFields(o.LogFields)}
+	logger := &Handle{logrus.StandardLogger().WithFields(o.LogFields), strings.ToLower(o.LogLevel)}
 
 	return logger, nil
 

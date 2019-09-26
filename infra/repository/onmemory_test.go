@@ -40,6 +40,37 @@ func TestSavePlayerAndFindIt(t *testing.T) {
 	}
 }
 
+func TestUpdatePlayer(t *testing.T) {
+	t.Run("increase wins to player", func(t *testing.T) {
+		// given a new player
+		repo := repository.NewPlayerRepositoryOnMemory(5)
+		newplayer := domain.NewPlayer("Ma Long")
+		saveAPlayer(t, repo, newplayer)
+		// increases
+		err := repo.UpdateWins(context.TODO(), newplayer.ID, 1)
+		assertNoError(t, err)
+		// query the new player and check if data was updated well
+		savedplayer, errfind := repo.FindByID(context.TODO(), newplayer.ID)
+		assertNoError(t, errfind)
+		assertStatistics(t, "winner", savedplayer.Wins, newplayer.Wins, newplayer.Wins+1)
+	})
+
+	t.Run("increase defeats to player", func(t *testing.T) {
+		// given a new player
+		repo := repository.NewPlayerRepositoryOnMemory(5)
+		newplayer := domain.NewPlayer("Ma Long")
+		saveAPlayer(t, repo, newplayer)
+		// increases
+		err := repo.UpdateDefeats(context.TODO(), newplayer.ID, 1)
+		assertNoError(t, err)
+		// query the new player and check if data was updated well
+		savedplayer, errfind := repo.FindByID(context.TODO(), newplayer.ID)
+		assertNoError(t, errfind)
+		assertStatistics(t, "loser", savedplayer.Losses, newplayer.Losses, newplayer.Losses+1)
+	})
+
+}
+
 func TestFindAllNotSorted(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -99,4 +130,33 @@ func TestFindAllSorted(t *testing.T) {
 		}
 	}
 
+}
+
+func saveAPlayer(t *testing.T, repo domain.PlayerRepository, newplayer *domain.Player) {
+	t.Helper()
+	ctx := context.TODO()
+
+	// when we save the player in the inmemory db
+	err := repo.Save(ctx, newplayer)
+
+	// then we check that is not an error
+	if err != nil {
+		t.Fatalf("An attempt was made to save the player [%+v], it was expected non errors but we got %s",
+			newplayer, err.Error())
+	}
+}
+
+func assertNoError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("error was not expected, but got: %s", err)
+	}
+}
+
+func assertStatistics(t *testing.T, statistic string, got, oldvalue, want int) {
+	t.Helper()
+	if got <= oldvalue {
+		t.Errorf(`The stored player %s counter is: %d, should be: %d`,
+			statistic, got, want)
+	}
 }

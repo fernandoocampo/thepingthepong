@@ -11,14 +11,14 @@ import (
 
 // DBMemory implements PlayerRepository and store data on memory.
 type dbMemory struct {
-	data map[string]domain.Player
+	data map[domain.Key]domain.Player
 }
 
 // NewPlayerRepositoryOnMemory contains an in memory database using a simple map.
 func NewPlayerRepositoryOnMemory(seed int) domain.PlayerRepository {
 	log.Infof("creating on memory map repository for players with seed: %d", seed)
 	db := new(dbMemory)
-	db.data = make(map[string]domain.Player, seed)
+	db.data = make(map[domain.Key]domain.Player, seed)
 	return db
 }
 
@@ -48,7 +48,7 @@ func (db *dbMemory) Save(ctx context.Context, player *domain.Player) error {
 }
 
 // FindById searches a player record with the given Id.
-func (db dbMemory) FindByID(ctx context.Context, id string) (domain.Player, error) {
+func (db dbMemory) FindByID(ctx context.Context, id domain.Key) (domain.Player, error) {
 	log.Infof("looking for player with id: %s", id)
 	var result domain.Player
 	resultchan := make(chan domain.Player)
@@ -97,4 +97,44 @@ func (db dbMemory) FindAll(ctx context.Context, sorted bool) ([]domain.Player, e
 		log.Infof("player was found on repository: %v", result)
 	}
 	return result, nil
+}
+
+// UpdateWins increases the value on field wins
+func (db dbMemory) UpdateWins(ctx context.Context, playerID domain.Key, wins int) error {
+	log.Infof("looking for player with id: %s", playerID)
+	resultchan := make(chan bool)
+	go func() {
+		player := db.data[playerID]
+		player.Wins += wins
+		db.data[playerID] = player
+		resultchan <- true
+	}()
+	select {
+	case <-ctx.Done():
+		log.Errorf("Operation take a long to time to finish: %s", ctx.Err())
+		return errors.Wrap(ctx.Err(), "Could not finish the find by id at time")
+	case <-resultchan:
+		log.Infof("player %q was updated on repository", playerID)
+	}
+	return nil
+}
+
+// UpdateDefeats increases the value on field loses
+func (db dbMemory) UpdateDefeats(ctx context.Context, playerID domain.Key, defeats int) error {
+	log.Infof("looking for player with id: %s", playerID)
+	resultchan := make(chan bool)
+	go func() {
+		player := db.data[playerID]
+		player.Losses += defeats
+		db.data[playerID] = player
+		resultchan <- true
+	}()
+	select {
+	case <-ctx.Done():
+		log.Errorf("Operation take a long to time to finish: %s", ctx.Err())
+		return errors.Wrap(ctx.Err(), "Could not finish the find by id at time")
+	case <-resultchan:
+		log.Infof("player %q was updated on repository", playerID)
+	}
+	return nil
 }

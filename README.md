@@ -46,6 +46,13 @@ The application provide the following APIs
   curl -d '{"username":"user1", "password":"password1"}' -H "Content-Type: application/json" -X POST http://localhost:8287/signin
   ```
 
+* Play
+  
+  To play a match between two player you have to sign in and consume the match API as follows :
+
+  ```
+  curl -d '{"player1ID":"", "player2ID":""}' -H "Content-Type: application/json" -H "Authorization: Bearer ${TOKEN}" -X POST http://localhost:8287/matches
+  ```
 
 ## HTTP Client
 In the root of the project was added a **insonmina** script to consume the API 
