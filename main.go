@@ -8,6 +8,7 @@ import (
 	"github.com/fernandoocampo/thepingthepong/application/matchapp"
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
 	"github.com/fernandoocampo/thepingthepong/common/logging"
+	"github.com/fernandoocampo/thepingthepong/domain"
 	"github.com/fernandoocampo/thepingthepong/infra/repository"
 	"github.com/fernandoocampo/thepingthepong/port"
 	"github.com/sirupsen/logrus"
@@ -17,26 +18,32 @@ var log *logging.Handle
 var webserver port.WebServer
 
 func init() {
+	// load configuration
+	loadConfiguration()
 	// initialize logger
 	initLogger()
 	// initialize inversion of control
 	initIoC()
 }
 
+func loadConfiguration() {
+	domain.LoadConfiguration("conf/")
+}
+
 // initLogger Initialize logger
 func initLogger() {
 	fmt.Println("... starting thepingthepong service logger")
 	fmt.Println()
-	loglevelval := "debug" // TODO add configuration
+	loglevelval := domain.Configuration.Log.Main.Level
 	if loglevelval == "" {
-		fmt.Println("You have not defined the log level SERVICE_LOG_LEVEL environment variable, so we are going to use [Info] level")
+		fmt.Println("You have not defined the log level for main log, so warn will be used instead")
 		fmt.Println()
-		loglevelval = "Info"
+		loglevelval = "Warn"
 	}
 
-	logformatval := "json" // TODO add configuration
+	logformatval := domain.Configuration.Log.Main.Format
 	if logformatval == "" {
-		fmt.Println("You have not defined the log level SERVICE_LOG_FORMAT environment variable, so we are going to use [text] value")
+		fmt.Println("You have not defined the log format for main log, so json will be used instead")
 		logformatval = "json"
 	}
 
@@ -54,6 +61,13 @@ func initLogger() {
 		fmt.Printf("cant load logger: %v", err)
 		os.Exit(1)
 	}
+	// initializes log for all modules
+	port.InitLog(domain.Configuration.Log.Port)
+	domain.InitLog(domain.Configuration.Log.Domain)
+	repository.InitLog(domain.Configuration.Log.Repository)
+	matchapp.InitLog(domain.Configuration.Log.Matchapp)
+	playerapp.InitLog(domain.Configuration.Log.Playerapp)
+
 }
 
 // initIoC initializes the dao and service used service and controller.
@@ -76,7 +90,7 @@ func initIoC() {
 // initHTTPServer start webserver on the configuration parameter host.
 func initHTTPServer() {
 	log.Println("Starting thepingpong service")
-	portvalue := "8287"  // add setting parameter
+	portvalue := "8287"  // TODO add setting parameter
 	if portvalue == "" { // check service port
 		fmt.Println("You have not defined the application port SERVICE_APP_PORT environment variable, so we are going to use [8287] value")
 		fmt.Println()

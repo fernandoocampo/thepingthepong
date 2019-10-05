@@ -10,11 +10,17 @@ import (
 
 var log *logging.Handle
 
-func init() {
+// InitLog initializes log configuration for this module.
+func InitLog(data LogData) {
 	var err error
-	log, err = logging.NewLogger(logging.Options{LogLevel: "warn", LogFormat: "json", LogFields: logrus.Fields{"pkg": "domain", "srv": "thepingthepong"}})
+	log, err = logging.NewLogger(
+		logging.Options{
+			LogLevel:  data.Level,
+			LogFormat: data.Format,
+			LogFields: logrus.Fields{"pkg": "domain", "srv": "thepingthepong"},
+		})
 	if err != nil {
-		fmt.Printf("cant load logger: %v", err)
+		fmt.Printf("cant load domain logger: %v", err)
 		os.Exit(1)
 	}
 }

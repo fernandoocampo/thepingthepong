@@ -1,0 +1,24 @@
+webserver:
+  port: 8287
+log:
+  main:
+    level: warn
+    format: json
+  port:
+    level: warn
+    format: json
+  domain:
+    level: warn
+    format: json
+  authapp:
+    level: warn
+    format: json
+  matchapp:
+    level: warn
+    format: json
+  playerapp:
+    level: warn
+    format: json
+  repository:
+    level: warn
+    format: json
