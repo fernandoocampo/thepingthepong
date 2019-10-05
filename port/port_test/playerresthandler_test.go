@@ -32,12 +32,10 @@ func generateToken(t *testing.T) (*http.Cookie, bool) {
 
 	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 	rr := httptest.NewRecorder()
-	// handler := http.HandlerFunc(playerhandler.GetByID)
 	r := mux.NewRouter()
 	r.HandleFunc("/signin", authHandler.SignIn).Methods("POST")
 
 	// When client consumes a rest api.
-	// handler.ServeHTTP(rr, req)
 	r.ServeHTTP(rr, req)
 
 	// Check the status code is what we expect.
@@ -58,7 +56,7 @@ func generateToken(t *testing.T) (*http.Cookie, bool) {
 
 func TestCreateAPlayer(t *testing.T) {
 	repo := repository.NewPlayerRepositoryOnMemory(1)
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 	playerhandler := port.NewPlayerRestHandler(service)
 
 	// Given a get request to find by Id a player.
@@ -74,7 +72,6 @@ func TestCreateAPlayer(t *testing.T) {
 
 	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 	rr := httptest.NewRecorder()
-	// handler := http.HandlerFunc(playerhandler.GetByID)
 	r := mux.NewRouter()
 	r.HandleFunc("/players", playerhandler.Create).Methods("POST")
 
@@ -87,7 +84,6 @@ func TestCreateAPlayer(t *testing.T) {
 	req.AddCookie(tokencookie)
 
 	// When client consumes a rest api.
-	// handler.ServeHTTP(rr, req)
 	r.ServeHTTP(rr, req)
 
 	// Then we check the result of the player found.
@@ -120,7 +116,7 @@ func TestCreateAPlayer(t *testing.T) {
 
 func TestGetAnExistingPlayer(t *testing.T) {
 	repo := repository.NewPlayerRepositoryOnMemory(1)
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 	playerhandler := port.NewPlayerRestHandler(service)
 	// save a player in the db.
 	newplayer := domain.NewPlayer("Wang Liqin")
@@ -132,19 +128,18 @@ func TestGetAnExistingPlayer(t *testing.T) {
 		t.Fatalf("A player cannot be saved because of: %s", errsave.Error())
 	}
 	// Given a get request to find by Id a player.
-	req, errreq := http.NewRequest("GET", "/players/"+newplayer.ID, nil)
+	url := fmt.Sprintf("/players/%s", newplayer.ID)
+	req, errreq := http.NewRequest("GET", url, nil)
 	if errreq != nil {
 		t.Fatal(errreq)
 	}
 
 	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 	rr := httptest.NewRecorder()
-	// handler := http.HandlerFunc(playerhandler.GetByID)
 	r := mux.NewRouter()
 	r.HandleFunc("/players/{playerid}", playerhandler.GetByID).Methods("GET")
 
 	// When client consumes a rest api.
-	// handler.ServeHTTP(rr, req)
 	r.ServeHTTP(rr, req)
 
 	// Then we check the result of the player found.
@@ -167,7 +162,7 @@ func TestGetAnExistingPlayer(t *testing.T) {
 
 func TestGetAllPlayers(t *testing.T) {
 	repo := repository.NewPlayerRepositoryOnMemory(1)
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 	playerhandler := port.NewPlayerRestHandler(service)
 	// save a player in the db.
 	newplayernames := []string{"Wang Liqin", "Liu Guoliang", "Ding Ning"}
@@ -194,7 +189,6 @@ func TestGetAllPlayers(t *testing.T) {
 	r.HandleFunc("/players", playerhandler.GetAll).Methods("GET")
 
 	// When client consumes a rest api.
-	// handler.ServeHTTP(rr, req)
 	r.ServeHTTP(rr, req)
 
 	// Then we check the result of the player found.

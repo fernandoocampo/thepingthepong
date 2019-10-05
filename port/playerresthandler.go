@@ -76,7 +76,7 @@ func (p playerRestHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	var playerid = mux.Vars(r)["playerid"]
 	log.Infof("player id to get one player is: %s", playerid)
 	log.Infof("getting ready to find player with id: %s on service", playerid)
-	player, err := p.service.FindByID(ctx, playerid)
+	player, err := p.service.FindByID(ctx, domain.Key(playerid))
 	if err != nil {
 		RespondRestWithError(w, http.StatusInternalServerError, err.Error())
 	}
@@ -100,7 +100,7 @@ func (p playerRestHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// close the body buffer at the end of the function
 	defer r.Body.Close()
 	// Create the decoder for bank regarding to the body request
-	log.Infof("request to create a player is: %v", r.Body)
+	log.Errorf("request to create a player is: %v", r.Body)
 	decoder := json.NewDecoder(r.Body)
 	// Get all the data of the request and map to player struct
 	// if error we response with error message

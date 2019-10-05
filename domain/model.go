@@ -8,14 +8,22 @@ import (
 	"github.com/google/uuid"
 )
 
+// Key is the primary key for every entity in the domain.
+type Key string
+
 // Player models the ping pong player.
 type Player struct {
-	ID      string    `json:"id,omitempty"`    // internal id
+	ID      Key       `json:"id,omitempty"`    // internal id
 	Names   string    `json:"names,omitempty"` // player names
 	Wins    int       `json:"wins"`            // the number of wins of this player
 	Losses  int       `json:"losses"`          // the number of losses of this player
 	Created time.Time `json:"created"`         // The creation date
 	Updated time.Time `json:"updated"`         // the update date
+}
+
+// GenerateUUIDKey generates a uuid key
+func GenerateUUIDKey() Key {
+	return Key(uuid.New().String())
 }
 
 // NewPlayer creates a new player with a random uuid ID.
@@ -27,7 +35,7 @@ func NewPlayer(names string) *Player {
 func NewPlayerWithStatistics(names string, wins, losses int) *Player {
 	log.Debugf("creating player with names: '%s', wins: %d, losses: %d", names, wins, losses)
 	return &Player{
-		ID:      uuid.New().String(),
+		ID:      GenerateUUIDKey(),
 		Names:   names,
 		Wins:    wins,
 		Losses:  losses,

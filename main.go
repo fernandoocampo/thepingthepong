@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/fernandoocampo/thepingthepong/application/authapp"
+	"github.com/fernandoocampo/thepingthepong/application/matchapp"
 	"github.com/fernandoocampo/thepingthepong/application/playerapp"
 	"github.com/fernandoocampo/thepingthepong/common/logging"
 	"github.com/fernandoocampo/thepingthepong/infra/repository"
@@ -60,14 +61,16 @@ func initIoC() {
 	// initialize repository layer
 	repo := repository.NewPlayerRepositoryOnMemory(5)
 	// initialize application layer
-	service := playerapp.NewBasicPlayerService(repo)
+	playerService := playerapp.NewBasicPlayerService(&repo)
+	matchService := matchapp.NewBasicMatchService(playerService)
 	authservice := authapp.NewBasicAuthenticator()
 	// initialize port layer
 	// initialize rest handler
-	playerhandler := port.NewPlayerRestHandler(service)
+	playerhandler := port.NewPlayerRestHandler(playerService)
+	matchhandler := port.NewMatchRestHandler(matchService)
 	authhandler := port.NewBasicAuthRestHandler(authservice)
 	// initialize web server
-	webserver = port.NewWebServer(playerhandler, authhandler)
+	webserver = port.NewWebServer(playerhandler, matchhandler, authhandler)
 }
 
 // initHTTPServer start webserver on the configuration parameter host.

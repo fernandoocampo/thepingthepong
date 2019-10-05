@@ -1,4 +1,4 @@
-package repository
+package matchapp
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ var log *logging.Handle
 
 func init() {
 	var err error
-	log, err = logging.NewLogger(logging.Options{LogLevel: "warn", LogFormat: "json", LogFields: logrus.Fields{"pkg": "repository", "srv": "thepingthepong"}})
+	log, err = logging.NewLogger(logging.Options{LogLevel: "warn", LogFormat: "json", LogFields: logrus.Fields{"pkg": "matchapp", "srv": "thepingthepong"}})
 	if err != nil {
 		fmt.Printf("cant load logger: %v", err)
 		os.Exit(1)

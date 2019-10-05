@@ -44,7 +44,9 @@ func TestLogHandle_SetFormat(t *testing.T) {
 func TestNewLogger(t *testing.T) {
 	lf := logrus.Fields{"foo": "bar"}
 	logger := logrus.StandardLogger().WithFields(lf)
-	lh := &logging.Handle{logger}
+	lh := &logging.Handle{logger, "info"}
+	lhDebug := &logging.Handle{logger, "debug"}
+	lhWarn := &logging.Handle{logger, "warn"}
 
 	tests := []struct {
 		name    string
@@ -58,9 +60,9 @@ func TestNewLogger(t *testing.T) {
 		{name: "LogLevel is wrong", args: logging.Options{LogLevel: "pepe", LogFormat: "text", LogFields: lf}, want: nil, wantErr: true},
 		{name: "LogFormat is wrong", args: logging.Options{LogLevel: "info", LogFormat: "pepe", LogFields: lf}, want: nil, wantErr: true},
 		{name: "LogFormat is json", args: logging.Options{LogLevel: "info", LogFormat: "json", LogFields: lf}, want: lh, wantErr: false},
-		{name: "LogLevel is warn", args: logging.Options{LogLevel: "warn", LogFormat: "text", LogFields: lf}, want: lh, wantErr: false},
+		{name: "LogLevel is warn", args: logging.Options{LogLevel: "warn", LogFormat: "text", LogFields: lf}, want: lhWarn, wantErr: false},
 		{name: "LogLevel is info", args: logging.Options{LogLevel: "info", LogFormat: "text", LogFields: lf}, want: lh, wantErr: false},
-		{name: "LogLevel is debug", args: logging.Options{LogLevel: "debug", LogFormat: "text", LogFields: lf}, want: lh, wantErr: false},
+		{name: "LogLevel is debug", args: logging.Options{LogLevel: "debug", LogFormat: "text", LogFields: lf}, want: lhDebug, wantErr: false},
 		{name: "Options is empty", args: logging.Options{}, want: nil, wantErr: true},
 	}
 	for _, tt := range tests {

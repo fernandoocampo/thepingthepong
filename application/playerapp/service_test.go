@@ -12,7 +12,7 @@ import (
 func TestSaveValidPlayer(t *testing.T) {
 	ctx := context.Background()
 	repo := repository.NewPlayerRepositoryOnMemory(1)
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 	// Given a player to save
 	newplayername := "Ma Lin"
 	newplayerwins := 4
@@ -52,7 +52,7 @@ func TestFindByID(t *testing.T) {
 	playertosave := domain.NewPlayer("Wang Hao")
 	repo := repository.NewPlayerRepositoryOnMemory(1)
 	repo.Save(ctx, playertosave)
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 	// Given an id to find
 	playerID := playertosave.ID
 
@@ -90,7 +90,7 @@ func TestFindAll(t *testing.T) {
 	for _, player := range players {
 		repo.Save(ctx, player)
 	}
-	service := playerapp.NewBasicPlayerService(repo)
+	service := playerapp.NewBasicPlayerService(&repo)
 
 	// When we want to find the player using the given id
 	result, err := service.FindAll(ctx, false)
