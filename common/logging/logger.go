@@ -30,10 +30,8 @@ func NewLogger(o Options) (*Handle, error) {
 		logrus.SetLevel(logrus.InfoLevel)
 	case "debug":
 		logrus.SetLevel(logrus.DebugLevel)
-	case "":
-		return nil, errors.New("Option cannot be empty")
 	default:
-		return nil, errors.New("Unknown LogLevel, expected Debug,Info or Warn")
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
 	switch strings.ToLower(o.LogFormat) {
@@ -41,10 +39,8 @@ func NewLogger(o Options) (*Handle, error) {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 	case "json":
 		logrus.SetFormatter(&logrus.JSONFormatter{})
-	case "":
-		return nil, errors.New("Option cannot be empty")
 	default:
-		return nil, errors.New("Unknown format, expected text,json")
+		logrus.SetFormatter(&logrus.TextFormatter{})
 	}
 
 	logger := &Handle{logrus.StandardLogger().WithFields(o.LogFields), strings.ToLower(o.LogLevel)}

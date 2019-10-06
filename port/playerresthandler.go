@@ -100,7 +100,6 @@ func (p playerRestHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// close the body buffer at the end of the function
 	defer r.Body.Close()
 	// Create the decoder for bank regarding to the body request
-	log.Errorf("request to create a player is: %v", r.Body)
 	decoder := json.NewDecoder(r.Body)
 	// Get all the data of the request and map to player struct
 	// if error we response with error message

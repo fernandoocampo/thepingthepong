@@ -1,5 +1,6 @@
 # The Ping The Pong
-this app is a simulated ping pong web game in the best Hattrick fashion. It exposes a REST API, store known players on database.
+this app is a simulated ping pong web game in the best Hattrick fashion. It exposes a REST API, to store known players on database and simulate an exciting ping pong match.
+
 
 ## How to run
 Clone the project, put on the project root folder and run:
@@ -48,7 +49,7 @@ The application provide the following APIs
 
 * Play
   
-  To play a match between two player you have to sign in and consume the match API as follows :
+  To play a match between two players you have to sign in and consume the match API as follows :
 
   ```
   curl -d '{"player1ID":"", "player2ID":""}' -H "Content-Type: application/json" -H "Authorization: Bearer ${TOKEN}" -X POST http://localhost:8287/matches
@@ -56,3 +57,9 @@ The application provide the following APIs
 
 ## HTTP Client
 In the root of the project was added a **insonmina** script to consume the API 
+
+## Thirdparty libraries
+
+* [Viper](https://github.com/spf13/viper) for configuration purposes.
+* [Gorilla](https://github.com/gorilla/mux) to take advantage of its powerful router.
+* [Logrus](https://github.com/sirupsen/logrus) for logging mechanism.
